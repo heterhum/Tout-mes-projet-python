@@ -20,7 +20,12 @@ while nombre_repete_par_ordi < utilisateur_choix :         #tant que le programm
     nombre_repete_par_ordi = nombre_repete_par_ordi + 1
     decompte_des_nombre[nombre_aleatoire] += 1
 else :
-    print(decompte_des_nombre)                   #donne tout le dictionnaire
+    for clé, valeur in decompte_des_nombre.items() :
+        pourcentage = (valeur/utilisateur_choix)*100
+        print(f"{clé} est apparue {valeur} fois avec un pourcentage de {round(pourcentage,2)} %" )
+    print(f"pour un total de {utilisateur_choix}")
+      
+
 
     
 
