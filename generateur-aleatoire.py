@@ -24,10 +24,3 @@ else :
         pourcentage = (valeur/utilisateur_choix)*100
         print(f"{clé} est apparue {valeur} fois avec un pourcentage de {round(pourcentage,2)} %" )
     print(f"pour un total de {utilisateur_choix}")
-      
-
-
-    
-
-
-
