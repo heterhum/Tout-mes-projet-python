@@ -1,15 +1,20 @@
 import random
 
 nombre_personne = 0
-tru = True
-
-continu = bool(input("d'autre personne doivent s'inscrire ? \n"))
-utilisateur_incription = input("donnez votre nom \n")
+personne = []
 
 
-while continu == tru :
-    continu = bool(input("d'autre personne doivent s'inscrire ? \n"))
+continu = input("d'autre personne doivent s'inscrire ? \n").lower()
+if continu == "true" :
     utilisateur_incription = input("donnez votre nom \n")
-    if continu = False :
-        break
+    personne.append(utilisateur_incription)
+    while continu == "true":
+        nombre_personne += 1
+        continu = input("D'autres personnes doivent-elles s'inscrire ? \n").lower()
+        if continu == "true":
+            utilisateur_inscription = input("Donnez votre nom\n")
+            personne.append(utilisateur_incription)
+
+print(len(personne),personne)
+
 
