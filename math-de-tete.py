@@ -13,8 +13,11 @@ a, b, opérateur = choix()
 
 while a < b and opérateur == '-' :
     a, b, opérateur = choix()
-
-valeur_utilisateur = int(input(f'{a} {opérateur} {b} =\n')) #demande a l'utilisateur de rentré une valeur en ayant prit soin de mettre ce qu'on demande avant en int et faire un retour a la ligne avec \n
+try:
+    valeur_utilisateur = int(input(f'{a} {opérateur} {b} =\n')) #demande a l'utilisateur de rentré une valeur en ayant prit soin de mettre ce qu'on demande avant en int et faire un retour a la ligne avec \n
+except ValueError:
+    print("erreur")
+    exit()
 
 temps_passé = time.time() - start_time #prend la temps écoulé aprés la réponse de l'utilisateur
 
@@ -27,6 +30,3 @@ else:
     print(False)
     print(resultat)
     print (f"Temps passé : {temps_passé:.2f} secondes") 
-
-
-
