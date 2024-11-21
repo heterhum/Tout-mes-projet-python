@@ -87,7 +87,7 @@ def setup():
     size(len(liste[0])*taille, len(liste)*taille)
     no_stroke()
     background(204)
-    image_mode(CENTER)
+    
     chavalier_blanc=load_image("Tout-mes-projet-python/img_echec/chavalier_blanc.png")
     chavalier_noir=load_image("Tout-mes-projet-python/img_echec/chavalier_noir.png")
     fou_blanc=load_image("Tout-mes-projet-python/img_echec/fou_blanc.png")
@@ -100,8 +100,10 @@ def setup():
     roi_noir=load_image("Tout-mes-projet-python/img_echec/roi_noir.png")
     tour_blanc=load_image("Tout-mes-projet-python/img_echec/tour_blanc.png")
     tour_noir=load_image("Tout-mes-projet-python/img_echec/tour_noir.png")
+    image_mode(CENTER)
 
 def draw():
+    #init echequier
     for y in range(len(liste)):
         for x in range(len(liste[0])):
             if liste[y][x]==1:
@@ -110,6 +112,7 @@ def draw():
             else:
                 fill(100,100,100)
                 rect(x*taille,y*taille,taille,taille)
+    #point vert en bas
     s=taille/2
     y=taille*nb_carree-100-s
     for _ in range(8):
@@ -117,6 +120,7 @@ def draw():
         strokeWeight(30)
         point(s,y)
         s+=taille
+    #point rose en haut
     s=taille/2
     y=100+s
     for _ in range(8):
@@ -124,16 +128,10 @@ def draw():
         strokeWeight(30)
         point(s,y)
         s+=taille
-
+    #pion blanc
+    
     for i in blanc:
         if blanc[i][0]==1:
             image(pion_blanc,i[0],i[1],taille,taille)
-
+print(blanc)
 run()
-
-
-
-
-
-
-
