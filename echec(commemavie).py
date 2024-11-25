@@ -33,6 +33,7 @@ def setup():
     size(len(liste[0])*taille, len(liste)*taille)
     no_stroke()
     background(204)
+
     chavalier_blanc=load_image("Tout-mes-projet-python/img_echec/chavalier_blanc.png")
     chavalier_noir=load_image("Tout-mes-projet-python/img_echec/chavalier_noir.png")
     fou_blanc=load_image("Tout-mes-projet-python/img_echec/fou_blanc.png")
@@ -146,4 +147,4 @@ def draw():
                 y=float(z[0][1])-taille/2
                 fill(0,0,0)
                 rect(x,y,taille,taille)
-run()
+run(renderer='skia')
