@@ -78,7 +78,7 @@ def draw():
             else:
                 fill(255,255,255)
                 rect(x*taille,y*taille,taille,taille)
-        print(tempo)
+        temposuivant.copy()
         tempo=temposuivant.copy()
         temposuivant=[]
 
