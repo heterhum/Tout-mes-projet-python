@@ -5,10 +5,12 @@ tailley=10
 grille_num = [[0 for j in range(taillex)] for i in range(tailley)]
 taille=50
 first_grille=True
-first_place=True
+stoptime=True
 fps=10
 tempo=[]
 temposuivant=[]
+nb=0
+nbfps=60/3 #3= nombre de fps
 
 def valide(x,y):
     if x<0 or y<0:
@@ -96,7 +98,7 @@ def setup():
     background(240)
 
 def draw():
-    global first_grille,grille_num,first_place,tempo,temposuivant
+    global first_grille,grille_num,stoptime,tempo,temposuivant,nb,nbfps
     nul=[]
     posi=[]
 
@@ -108,7 +110,7 @@ def draw():
         first_grille=False
         print("fait")
 
-    elif first_place:
+    elif stoptime:
         if mouse_is_pressed:
             x=int(mouse_x//taille)
             y=int(mouse_y//taille)
@@ -116,7 +118,7 @@ def draw():
             rect(x*taille,y*taille,taille,taille)
             grille_num[y][x]=1
             tempo+=createtempo(tempo,x,y)
-    else: 
+    elif nb%nbfps==0: 
         for i in tempo:
             x,y=i
             res=check(grille_num,x,y)
@@ -135,13 +137,19 @@ def draw():
             grille_num[i[1]][i[0]]=0
         tempo=temposuivant.copy()
         temposuivant=[]
+    
+    nb+=1
 
 def key_pressed():
-    global first_place
-    if key=='a':
-        first_place=False
-        fill(100,200,66)
-        textSize(3*taille)
-        text("Génération : ",(taillex+1)*taille,(tailley/5)*taille)
+    global stoptime
+    if key=='p':
+        if stoptime:
+            stoptime=False
+        else:
+            stoptime=True
+        #stoptime=False
+        #fill(100,200,66)
+        #textSize(3*taille)
+        #text("Génération : ",(taillex+1)*taille,(tailley/5)*taille)
 
-run(renderer="skia",frame_rate=10)
+run(renderer="skia",frame_rate=60)
