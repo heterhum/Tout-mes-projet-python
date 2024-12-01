@@ -1,16 +1,16 @@
 from p5 import *
 
-taillex=10
-tailley=10
+taillex=500
+tailley=500
 grille_num = [[0 for j in range(taillex)] for i in range(tailley)]
-taille=50
+taille=3
 first_grille=True
 stoptime=True
 fps=10
 tempo=[]
 temposuivant=[]
 nb=0
-nbfps=60/3 #3= nombre de fps
+nbfps=60/10 #3= nombre de fps
 
 def valide(x,y):
     if x<0 or y<0:
