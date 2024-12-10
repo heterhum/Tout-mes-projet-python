@@ -11,5 +11,7 @@ class blanche:
             y=y-self.taille
             self.move.append((x,y))
         return self.move
+    
+#dico blanc dico noir coordonnée
        
 
