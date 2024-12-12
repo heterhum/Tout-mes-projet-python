@@ -5,7 +5,6 @@ STEP=100
 N=8
 screen = pygame.display.set_mode((N*STEP, N*STEP))
 running=False
-moove=moove(N)
 chavalier_blanc=pygame.image.load("Tout-mes-projet-python/img_echec/chavalier_blanc.png")
 chavalier_noir=pygame.image.load("Tout-mes-projet-python/img_echec/chavalier_noir.png")
 fou_blanc=pygame.image.load("Tout-mes-projet-python/img_echec/fou_blanc.png")
@@ -63,7 +62,7 @@ dico_blanc={
     (4,7):[roi_blanc,"roi_blanc",False],
     (0,7):[tour_blanc,"tour_blanc",False],
     (7,7):[tour_blanc,"tour_blanc",False],
-    #(0,6):[pion_blanc,"pion_blanc",False],
+    (0,6):[pion_blanc,"pion_blanc",False],
     (1,6):[pion_blanc,"pion_blanc",False],
     (2,6):[pion_blanc,"pion_blanc",False],
     (3,6):[pion_blanc,"pion_blanc",False],
@@ -72,8 +71,8 @@ dico_blanc={
     (6,6):[pion_blanc,"pion_blanc",False],
     (7,6):[pion_blanc,"pion_blanc",False]
 }
-
-print(moove.tour((0,7),dico_noir,dico_blanc,"tour_blanc"))
+moove=moove(N,dico_noir,dico_blanc)
+print(moove.Allmoove((4,0),"roi_noir"))
 
 while running:
     desplat(N)
