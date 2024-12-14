@@ -1,9 +1,9 @@
 from p5 import *
 
-taillex=500
-tailley=500
+taillex=50
+tailley=50
 grille_num = [[0 for j in range(taillex)] for i in range(tailley)]
-taille=3
+taille=10
 first_grille=True
 stoptime=True
 fps=10
