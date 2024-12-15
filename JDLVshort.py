@@ -2,7 +2,7 @@ from pygame import *
 TAILLEX,TAILLEY,N,MOVE = 50,50,20,[(1, 1), (0, 1), (-1, 1),(1, -1), (0, -1), (-1, -1),(1, 0), (-1, 0)]
 grille_num,screen = [[0 for j in range(TAILLEX)] for i in range(TAILLEY)],display.set_mode((N * TAILLEX, N * TAILLEY))
 pause=running = True
-def check(grille, x, y):
+def check(grille,x,y):
     s = 0
     for i in MOVE:
         x1, y1 = i
@@ -30,7 +30,7 @@ while running:
         grilles=[i.copy() for i in grille_num]
         for y in range(TAILLEY):
             for x in range(TAILLEX):
-                grille_num[y][x] = check(grilles, x, y)
+                grille_num[y][x] = check(grilles,x,y)
         time.wait(500)
     display.update()
 quit()
