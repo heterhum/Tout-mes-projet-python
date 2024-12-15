@@ -22,10 +22,9 @@ while running:
     dess(grille_num)
     for evente in event.get():
         if evente.type == QUIT: running = False
-        if evente.type == MOUSEBUTTONDOWN:
-            pos = mouse.get_pos()
-            grille_num[pos[1] // N][pos[0] // N] = 1
-        if evente.type == KEYDOWN and evente.key==K_p: pause=not pause
+        elif evente.type == MOUSEBUTTONDOWN:
+            grille_num[mouse.get_pos()[1] // N][mouse.get_pos()[0] // N] = 1
+        elif evente.type == KEYDOWN and evente.key==K_p: pause=not pause
     if not pause:
         grilles=[i.copy() for i in grille_num]
         for y in range(TAILLEY):
