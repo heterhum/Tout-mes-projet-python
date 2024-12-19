@@ -1,32 +1,48 @@
 import pygame
+import random as rd
 
-N=10
-STEP=70
+STEP=30
+X=Y=20
+taille_depart=30
+pommes=2
 
-screen = pygame.display.set_mode((N*STEP, N*STEP))
+screen = pygame.display.set_mode((X*STEP, Y*STEP))
 running=True
-
 
 class snake():
     """
     move act : 1 = UP, 2 = DOWN, 3 =LEFT, 4 = RIGHT
     """
-    def __init__(self):
-        self.mape=[[0 for x in range(N)] for y in range(N)]
+    def __init__(self,longueur,pommes):
+        self.mape=[[0 for x in range(X)] for y in range(Y)]
         self.move=[(1,0),(0,1),(0,-1),(-1,0)]
-        self.mape[5][5]=1
+        self.mape[int(Y/2)][int(X/2)]=1
         self.mov_act=3
-        self.longueur=4
-        self.keu=[[1,5],[2,5],[3,5],[4,5],[5,5]]
+        self.longueur=longueur
+        self.keu=[[int(X/2),int(Y/2)]]
+        self.pomme=[[rd.randint(0, int(X/2)-1),rd.randint(0, int(Y/2)-1)] for i in range(pommes)]
 
     def maj(self):
         self.mape[self.keu[0][1]][self.keu[0][0]]=0
         self.mape[self.keu[-1][1]][self.keu[-1][0]]=1
-        #for i in self.keu:
-        #    self.mape[i[-1]][i[0]]=1
+        for i in self.pomme:
+            self.mape[i[1]][i[0]]=2
+
+    def obte(self):
+        dispo=[]
+        for y in range(Y):
+            for x in range(X):
+                if self.mape[y][x] != (1 or 2):
+                    dispo.append([x,y])
+        return dispo
 
     def check(self):
-        if 0<=self.keu[-1][0]<N and 0<=self.keu[-1][1]<N:
+        if self.keu[-1] in self.pomme:
+            self.longueur+=1
+            self.pomme.remove(self.keu[-1])
+            self.pomme.append(rd.choice(self.obte()))
+            return True
+        elif 0<=self.keu[-1][0]<X and 0<=self.keu[-1][1]<Y and self.keu[-1] not in self.keu[:-1]:
             return True
         else:
             self.mape=None
@@ -36,7 +52,6 @@ class snake():
         n=[]
         for i,j in zip(self.keu[-1],self.move[0]):
             n.append(i+j)
-        print(n)
         if len(self.keu)-1==self.longueur:
             self.keu.append(n)
             self.keu.pop(0)
@@ -97,7 +112,7 @@ class snake():
             case 3: self.left()
             case 4: self.right()
 
-snakee=snake()
+snakee=snake(taille_depart,pommes)
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -111,64 +126,18 @@ while running:
     pygame.time.wait(250)
     snakee.moove()
     if snakee.mape!=None:
-        for y in range(N):
-            for x in range(N):
+        for y in range(Y):
+            for x in range(X):
                 if snakee.mape[y][x]==1:
-                    pygame.draw.rect(screen,(255,0,255),pygame.Rect(x*STEP, y*STEP, STEP, STEP))
-                    pygame.draw.rect(screen,(0,0,0),pygame.Rect(x*STEP, y*STEP, STEP, STEP),width=1,)
+                    pygame.draw.rect(screen,(92, 179, 56),pygame.Rect(x*STEP, y*STEP, STEP, STEP))
+                    #pygame.draw.rect(screen,(0,0,0),pygame.Rect(x*STEP, y*STEP, STEP, STEP),width=1,)
+                elif snakee.mape[y][x]==2:
+                    pygame.draw.rect(screen,(251, 65, 65),pygame.Rect(x*STEP, y*STEP, STEP, STEP))
+                    #pygame.draw.rect(screen,(0,0,0),pygame.Rect(x*STEP, y*STEP, STEP, STEP),width=1,)
                 else:
                     pygame.draw.rect(screen,(255,255,255),pygame.Rect(x*STEP, y*STEP, STEP, STEP))
-                    pygame.draw.rect(screen,(0,0,0),pygame.Rect(x*STEP, y*STEP, STEP, STEP),width=1,)
+                    #pygame.draw.rect(screen,(0,0,0),pygame.Rect(x*STEP, y*STEP, STEP, STEP),width=1,)
     else :
         running=False
     pygame.display.update()
-    
-    
-    
-    
-    
-        #def move(m,tabl):
-    #    table=tabl.copy()
-    #    new=[]
-    #    table[keu[-1][1]][keu[-1][0]]=0
-    #    if m==1 and mov_act!=2: #down
-    #        #emplacement=(emplacement[0]-1,emplacement[1])
-    #        for i,j in zip(keu[-1],MOVE[m]):
-    #            new.append(i+j)
-    #        keu[-1]=new.copy()
-    #        if 0<=keu[-1][0]<=N and 0<=keu[-1][1]<=N:
-    #            table[keu[-1][1]][keu[-1][0]]=1
-    #            return table
-    #        else:
-    #            return None
-    #    if m==2 and mov_act!=1: #up
-    #        #keu[-1]=(keu[-1][0]-1,keu[-1][1])
-    #        for i,j in zip(keu[-1],MOVE[m]):
-    #            new.append(i+j)
-    #        keu[-1]=new.copy()
-    #        if 0<=keu[-1][0]<=N and 0<=keu[-1][1]<=N:
-    #            table[keu[-1][1]][keu[-1][0]]=1
-    #            return table
-    #        else:
-    #            return None
-    #    if m==3 and mov_act!=0: #left
-    #        #keu[-1]=(keu[-1][0]-1,keu[-1][1])
-    #        for i,j in zip(keu[-1],MOVE[m]):
-    #            new.append(i+j)
-    #        keu[-1]=new.copy()
-    #        if 0<=keu[-1][0]<=N and 0<=keu[-1][1]<=N:
-    #            table[keu[-1][1]][keu[-1][0]]=1
-    #            return table
-    #        else:
-    #            return None
-    #    if m==0 and mov_act!=3: #right
-    #        #keu[-1]=(keu[-1][0]-1,keu[-1][1])
-    #        for i,j in zip(keu[-1],MOVE[m]):
-    #            new.append(i+j)
-    #        keu[-1]=new.copy()
-    #        if 0<=keu[-1][0]<=N and 0<=keu[-1][1]<=N:
-    #            table[keu[-1][1]][keu[-1][0]]=1
-    #            return table
-    #        else:
-    #            return None
-    #    return tabl
+quit()
