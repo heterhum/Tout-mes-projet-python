@@ -16,8 +16,8 @@ class snake():
         self.move=[(1,0),(0,1),(0,-1),(-1,0)]
         self.mape[5][5]=1
         self.mov_act=3
-        self.longueur=1
-        self.keu=[[5,5],[5,5]]
+        self.longueur=4
+        self.keu=[[1,5],[2,5],[3,5],[4,5],[5,5]]
 
     def maj(self):
         self.mape[self.keu[0][1]][self.keu[0][0]]=0
@@ -26,7 +26,7 @@ class snake():
         #    self.mape[i[-1]][i[0]]=1
 
     def check(self):
-        if 0<=self.keu[-1][0]<=N and 0<=self.keu[-1][1]<=N:
+        if 0<=self.keu[-1][0]<N and 0<=self.keu[-1][1]<N:
             return True
         else:
             self.mape=None
@@ -36,11 +36,12 @@ class snake():
         n=[]
         for i,j in zip(self.keu[-1],self.move[0]):
             n.append(i+j)
+        print(n)
         if len(self.keu)-1==self.longueur:
-            self.keu[-1].append(n)
+            self.keu.append(n)
             self.keu.pop(0)
         else:
-            self.keu[-1].append(n)
+            self.keu.append(n)
         self.move_act=4
         if self.check():
             self.maj()
@@ -52,10 +53,10 @@ class snake():
         for i,j in zip(self.keu[-1],self.move[3]):
             n.append(i+j)
         if len(self.keu)-1==self.longueur:
-            self.keu[-1].append(n)
+            self.keu.append(n)
             self.keu.pop(0)
         else:
-            self.keu[-1].append(n)
+            self.keu.append(n)
         self.move_act=3
         if self.check():
             self.maj()
@@ -66,10 +67,10 @@ class snake():
         for i,j in zip(self.keu[-1],self.move[2]):
             n.append(i+j)
         if len(self.keu)-1==self.longueur:
-            self.keu[-1].append(n)
+            self.keu.append(n)
             self.keu.pop(0)
         else:
-            self.keu[-1].append(n)
+            self.keu.append(n)
         self.move_act=1
         if self.check():
             self.maj()
@@ -80,10 +81,10 @@ class snake():
         for i,j in zip(self.keu[-1],self.move[1]):
             n.append(i+j)
         if len(self.keu)-1==self.longueur:
-            self.keu[-1].append(n)
+            self.keu.append(n)
             self.keu.pop(0)
         else:
-            self.keu[-1].append(n)
+            self.keu.append(n)
         self.move_act=2
         if self.check():
             self.maj()
@@ -102,11 +103,11 @@ while running:
         if event.type == pygame.QUIT:
             running=False
         if event.type == pygame.KEYDOWN:
-            match event.key:
-                case pygame.K_UP: snakee.mov_act=1 
-                case pygame.K_DOWN: snakee.mov_act=2 
-                case pygame.K_RIGHT: snakee.mov_act=4 
-                case pygame.K_LEFT: snakee.mov_act=3  
+            c=event.key
+            if c==pygame.K_UP and snakee.mov_act!=2: snakee.mov_act=1 
+            elif c==pygame.K_DOWN and snakee.mov_act!=1: snakee.mov_act=2
+            elif c==pygame.K_LEFT and snakee.mov_act!=4: snakee.mov_act=3 
+            elif c==pygame.K_RIGHT and snakee.mov_act!=3: snakee.mov_act=4
     pygame.time.wait(250)
     snakee.moove()
     if snakee.mape!=None:
