@@ -1,6 +1,6 @@
 #overcomplicated version
-X=Y=5
-reussite=4
+X=Y=3
+reussite=3
 morpion=[[' ' for x in range(X)] for y in range(Y)]
 m=[[' ' for x in range(X)] for y in range(Y)]
 observation=[(-1,-1),(0,-1),(1,-1),(1,0),(1,1),(0,1),(-1,1),(-1,0)]
@@ -10,7 +10,7 @@ morpion[2][2]='X'
 morpion[1][0]='X'
 morpion[1][1]='X'
 morpion[1][2]='X'
-morpion[1][3]='X'
+
 #morpion[3][3]='X'
 for i in morpion: print(i)
 
