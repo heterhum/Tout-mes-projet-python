@@ -3,9 +3,9 @@ import random
 
 class base:
     def __init__(self):
-        self.TAILLEX = 50
-        self.TAILLEY = 50
-        self.N = 20
+        self.TAILLEX = 200
+        self.TAILLEY = 200
+        self.N = 5
         self.MOVE = [(1, 1), (0, 1), (-1, 1),(1, -1), (0, -1), (-1, -1),(1, 0), (-1, 0)]
         self.grille_num = [[0 for j in range(self.TAILLEX)] for i in range(self.TAILLEY)]
         self.screen = pygame.display.set_mode((self.N * self.TAILLEX, self.N * self.TAILLEY))
@@ -13,7 +13,7 @@ class base:
         self.pause=True
         self.running = True
         self.random_pourcent=40
-        self.velocite=100
+        self.velocite=50
         
         self.BrushDown=False
         self.BrushActSquare=None
@@ -44,10 +44,12 @@ class JDLV(base):
             if 0 <= x + x1 < self.TAILLEX and 0 <= y + y1 < self.TAILLEY:
                 if grille[y + y1][x + x1] == 1:
                     s += 1
-        if s == 3 or s==6:
+        if s == 1 or s==6:
             return 1
-        elif s == 2 or s==3:
+        elif s == 5 or s==3:
             return grille[y][x]
+        elif s==4:
+            return not grille[y][x]
         else:
             return 0
         
