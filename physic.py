@@ -1,6 +1,7 @@
 import pygame
 import random as rd
 import numpy as np
+import time
 
 # 10 pixels = 1m
 pixel_to_m=10
@@ -95,17 +96,26 @@ class circle():
         self.r = r
         self._velocity=0 # m/s
         self._masse=1 # kg
-        self.coefResti=0.83 #0.83
+        self.coefResti=0.2 #0.83
         self._Ecin=(1/2)*self.masse*self.velocity**2
         self.Vdirector=(1,0)
         self.objectsclass=objet
         self.physic=Physic()
         self.boxPosPrec=[]
         self.updateBox()
+        self.cooldown=time.time()
 
     def update_Ecin(self):
         self._Ecin = 0.5 * self._masse * (self._velocity ** 2)
         return
+
+    def cooldownstart(self):
+        self.cooldown=time.time()
+        return
+    def cooldowncheck(self):
+        if time.time()-self.cooldown>=0.1:
+            return True
+        return False
 
     @property
     def Ecin(self):
@@ -184,11 +194,14 @@ class circle():
             for i in u:
                 uh=self.objectsclass.objectmap[i]
                 if type(uh) == mur:
-                    
-                    if not (0<=self.x+self.r<=WIDTH and 0<=self.y+self.r<=HEIGHT and 0<=self.x-self.r<=WIDTH and 0<=self.y-self.r<=HEIGHT):
-                        newxy=self.physic.Collimur(self,uh)
-                        self.x=newxy[0]
-                        self.y=newxy[1]
+                    if not (0<=self.x+self.r<=WIDTH and 0<=self.y+self.r<=HEIGHT and 0<=self.x-self.r<=WIDTH and 0<=self.y-self.r<=HEIGHT) :
+                        if self.cooldowncheck():
+                            newxy=self.physic.Collimur(self,uh)
+                            self.x=newxy[0]
+                            self.y=newxy[1]
+                            self.cooldownstart()
+                        else:
+                            self.velocity=0
                     else:
                         self.x=x
                         self.y=y
@@ -222,6 +235,7 @@ class mur():
     def __init__(self, d):
         self.d = d
         self.vnorm=self.getVector()
+        self.velocity=0
         
     def getVector(self):
         if self.d == "droite":
@@ -303,7 +317,8 @@ class objects():
 
     def movveAll(self):
         for i in self.objectmap.values():
-            i.moove()
+            if i.velocity!=0:
+                i.moove()
         return
     
     def checkColli(self,obj):
