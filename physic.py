@@ -15,7 +15,6 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 FPS = 120
 
-
 running = True
 
 class Physic():
@@ -63,7 +62,6 @@ class Physic():
 
         norme=self.norme(NewV)
         NewV=self.Vnormale(NewV,norme)
-        
         obj1.update(velocity=obj1.coefResti*obj1.velocity,Vdirector=NewV)
         newxy=self.gravVcalc(obj1)
         return newxy
@@ -96,7 +94,7 @@ class circle():
         self.r = r
         self._velocity=0 # m/s
         self._masse=1 # kg
-        self.coefResti=0.2 #0.83
+        self.coefResti=0.83 #0.83
         self._Ecin=(1/2)*self.masse*self.velocity**2
         self.Vdirector=(1,0)
         self.objectsclass=objet
@@ -174,8 +172,9 @@ class circle():
         lSend=[]
         for y in range(topTo,botTo+1):
             for x in range(leftTo,rightTo+1):
-                lSend.append((x,y))
-                self.objectsclass.addContainer(self,x,y)
+                if 0<=x<TAILLEX and 0<=y<TAILLEY:
+                    lSend.append((x,y))
+                    self.objectsclass.addContainer(self,x,y)
 
         if self.boxPosPrec != []:
                 for i in self.boxPosPrec:
@@ -185,17 +184,40 @@ class circle():
         self.boxPosPrec=lSend
         return 
     
-    def tuchWall(self,x,y,obj):
+    def tuchWall(self,x,y):
         if not (0<=self.x+self.r<=WIDTH and 0<=self.y+self.r<=HEIGHT and 0<=self.x-self.r<=WIDTH and 0<=self.y-self.r<=HEIGHT) :
+            if self.x+self.r>WIDTH:
+                obj=mur("droite")
+                self.x=WIDTH-self.r
+            if self.x-self.r<0:
+                obj=mur("gauche")
+                self.x=self.r
+            if self.y+self.r>HEIGHT:
+                obj=mur("bas")
+                self.y=HEIGHT-self.r
+            if self.y-self.r<0:
+                obj=mur("haut")
+                self.y=self.r
+
             if self.cooldowncheck():
                 newxy=self.physic.Collimur(self,obj)
                 self.x=newxy[0]
                 self.y=newxy[1]
                 self.cooldownstart()
                 print("boing")
-            elif self.tuchwall>=10:
+                print(self.Vdirector,self.velocity)
+                print(self.y+self.r)
+                if self.velocity<0.7 and self.y>=HEIGHT-self.r-1:
+                    print("stuck")
+                    self.velocity=0
+                    self.Vdirector=(0,0)
+                    self.y=HEIGHT-self.r
+            elif self.velocity<0.7 and self.y>=HEIGHT-self.r-1:
                 print("stuck")
                 self.velocity=0
+                self.Vdirector=(0,0)
+                self.y=HEIGHT-self.r
+                
         else:
             self.x=x
             self.y=y
@@ -210,59 +232,19 @@ class circle():
         if u != []:
             for i in u:
                 uh=self.objectsclass.objectmap[i]
-                match type(uh):
+                match uh:
                     case mur():
-                        self.tuchWall(x,y,uh)
-                        print("mur")
+                        self.tuchWall(x,y)
+                        
                     case circle():
-                        print("circle")
+                        
                         pass
                     case _:
-                        print("rien")
                         self.x=x
                         self.y=y
         else:
             self.x=x
             self.y=y
-
-#                if type(uh) == mur:
-#                    if not (0<=self.x+self.r<=WIDTH and 0<=self.y+self.r<=HEIGHT and 0<=self.x-self.r<=WIDTH and 0<=self.y-self.r<=HEIGHT) :
-#                        if self.cooldowncheck():
-#                            newxy=self.physic.Collimur(self,uh)
-#                            self.x=newxy[0]
-#                            self.y=newxy[1]
-#                            self.cooldownstart()
-#                            print("boing")
-#                        elif self.tuchwall>=10:
-#                            print("stuck")
-#                            self.velocity=0
-#                    else:
-#                        self.x=x
-#                        self.y=y
-#                        
-#
-#                elif type(uh) == circle:
-#                    pass
-#                    #self.physic.collision(self,uh) #TO DO
-#                else:
-#                    
-#                    self.x=x
-#                    self.y=y
-#                    
-#        else:
-#            
-#            self.x=x
-#            self.y=y
-
-        #if 0<=x+self.r<=WIDTH and 0<=y+self.r<=HEIGHT and 0<=x-self.r<=WIDTH and 0<=y-self.r<=HEIGHT:
-        #    self.x=x
-        #    self.y=y
-        #    
-        #else: #a tapé mur
- #
-        #    
-        #    self.boxPosPrec
-        #    self.update(velocity=self.coefResti*self.velocity,Vdirector=(0,0))
         return
 
 class mur():
@@ -270,6 +252,7 @@ class mur():
         self.d = d
         self.vnorm=self.getVector()
         self.velocity=0
+        self.Vdirector=(0,0)
         
     def getVector(self):
         if self.d == "droite":
@@ -351,7 +334,7 @@ class objects():
 
     def movveAll(self):
         for i in self.objectmap.values():
-            if i.velocity!=0:
+            if i.Vdirector!=(0,0) :
                 i.moove()
         return
     
@@ -379,8 +362,9 @@ c=circle(20,390,10,Objects)
 #c1=circle(500,390,10)
 Objects.addObject(c)
 #Objects.addObject(c1)
-c.update(velocity=30,Vdirector=(1/np.sqrt(1**2+1**2),1/np.sqrt(1**2+1**2)))
+c.update(velocity=10,Vdirector=(1/np.sqrt(1**2+1**2),1/np.sqrt(1**2+1**2)))
 #c1.update(velocity=40,Vdirector=(-1/np.sqrt(1**2+1**2),1/np.sqrt(1**2+1**2)))
+
 
 while running:
     screen.fill((115, 117, 117))
