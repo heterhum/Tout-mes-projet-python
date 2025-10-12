@@ -104,6 +104,7 @@ class circle():
         self.boxPosPrec=[]
         self.updateBox()
         self.cooldown=time.time()
+        self.tuchwall=0
 
     def update_Ecin(self):
         self._Ecin = 0.5 * self._masse * (self._velocity ** 2)
@@ -111,10 +112,12 @@ class circle():
 
     def cooldownstart(self):
         self.cooldown=time.time()
+        self.tuchwall=0
         return
     def cooldowncheck(self):
         if time.time()-self.cooldown>=0.1:
             return True
+        self.tuchwall+=1
         return False
 
     @property
@@ -182,9 +185,23 @@ class circle():
         self.boxPosPrec=lSend
         return 
     
+    def tuchWall(self,x,y,obj):
+        if not (0<=self.x+self.r<=WIDTH and 0<=self.y+self.r<=HEIGHT and 0<=self.x-self.r<=WIDTH and 0<=self.y-self.r<=HEIGHT) :
+            if self.cooldowncheck():
+                newxy=self.physic.Collimur(self,obj)
+                self.x=newxy[0]
+                self.y=newxy[1]
+                self.cooldownstart()
+                print("boing")
+            elif self.tuchwall>=10:
+                print("stuck")
+                self.velocity=0
+        else:
+            self.x=x
+            self.y=y
+
     def moove(self):
         u=self.objectsclass.checkColli(self)
-
         newxy=self.physic.gravVcalc(self)
         x=newxy[0]
         y=newxy[1]
@@ -193,32 +210,49 @@ class circle():
         if u != []:
             for i in u:
                 uh=self.objectsclass.objectmap[i]
-                if type(uh) == mur:
-                    if not (0<=self.x+self.r<=WIDTH and 0<=self.y+self.r<=HEIGHT and 0<=self.x-self.r<=WIDTH and 0<=self.y-self.r<=HEIGHT) :
-                        if self.cooldowncheck():
-                            newxy=self.physic.Collimur(self,uh)
-                            self.x=newxy[0]
-                            self.y=newxy[1]
-                            self.cooldownstart()
-                        else:
-                            self.velocity=0
-                    else:
+                match type(uh):
+                    case mur():
+                        self.tuchWall(x,y,uh)
+                        print("mur")
+                    case circle():
+                        print("circle")
+                        pass
+                    case _:
+                        print("rien")
                         self.x=x
                         self.y=y
-                        
-
-                elif type(uh) == circle:
-                    pass
-                    #self.physic.collision(self,uh) #TO DO
-                else:
-                    
-                    self.x=x
-                    self.y=y
-                    
         else:
-            
             self.x=x
             self.y=y
+
+#                if type(uh) == mur:
+#                    if not (0<=self.x+self.r<=WIDTH and 0<=self.y+self.r<=HEIGHT and 0<=self.x-self.r<=WIDTH and 0<=self.y-self.r<=HEIGHT) :
+#                        if self.cooldowncheck():
+#                            newxy=self.physic.Collimur(self,uh)
+#                            self.x=newxy[0]
+#                            self.y=newxy[1]
+#                            self.cooldownstart()
+#                            print("boing")
+#                        elif self.tuchwall>=10:
+#                            print("stuck")
+#                            self.velocity=0
+#                    else:
+#                        self.x=x
+#                        self.y=y
+#                        
+#
+#                elif type(uh) == circle:
+#                    pass
+#                    #self.physic.collision(self,uh) #TO DO
+#                else:
+#                    
+#                    self.x=x
+#                    self.y=y
+#                    
+#        else:
+#            
+#            self.x=x
+#            self.y=y
 
         #if 0<=x+self.r<=WIDTH and 0<=y+self.r<=HEIGHT and 0<=x-self.r<=WIDTH and 0<=y-self.r<=HEIGHT:
         #    self.x=x
