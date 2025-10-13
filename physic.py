@@ -2,53 +2,46 @@ import pygame
 import random as rd
 import numpy as np
 import time
+#ceci m'a couté un week-end de ma vie
+#ne pas mettre des vitesse trop abérrante, c'est possible que je ne comprenne pas le bug généré
+#TO DO : ajouter du random
 
-# 10 pixels = 1m
-pixel_to_m=10
-WIDTH, HEIGHT = 600, 400
+PIXELTOMETER=10 #10 pixels = 1m
+WIDTH, HEIGHT = 1000, 600
 N=50
-TAILLEX = (WIDTH // N)+1
-TAILLEY = (HEIGHT // N)+1
+TAILLEX, TAILLEY= (WIDTH // N)+1, (HEIGHT // N)+1
+FPS = 120
 
-grille=[[0 for x in range(TAILLEX)] for y in range(TAILLEY)]
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
-FPS = 120
 
 running = True
 
 class Physic():
     def __init__(self):
-        self.gravity=9.81 # m/s^2
-        Ngravity=np.array([0,-self.gravity])
-        pass
+        self.gravity=9.81 # m/s^2 9.81
 
-    def Vcalc(self,v,vector,x,y):
-        distnace=v*(1/FPS)
-        Pdistance=(distnace*pixel_to_m)
+    def Vcalc(self,v,vector,x,y): #calcule nouvelle position
+        distance=v*(1/FPS)
+        Pdistance=(distance*PIXELTOMETER)
         Vx=Pdistance*vector[0]
         Vy=Pdistance*vector[1]
         x+=Vx
         y-=Vy
+
         return x,y
     
-    def gravVcalc(self,obj):
-        v=obj.velocity
-        vector=obj.Vdirector
-        x=obj.x
-        y=obj.y
-        Nvector=(vector[0]*v,vector[1]*v+(1/FPS)*(-self.gravity))
-        norme=np.sqrt(Nvector[0]**2+Nvector[1]**2)
-        if norme!=0:
-            NewVector=(Nvector[0]/norme,Nvector[1]/norme)
-        else:
-            NewVector=(0,0)
-
+    def gravVcalc(self,v,vector,x,y):
+        Nvector=(vector[0]*v,vector[1]*v+(1/FPS)*(-self.gravity)) #calcule nouveau vecteur directeur avec la gravité
+        norme=self.norme(Nvector)
+        NewVector=self.Vnormale(Nvector,norme)
         xy=self.Vcalc(norme,NewVector,x,y)
+
         return xy[0],xy[1],norme,NewVector
     
     def norme(self,vect):
         return np.sqrt(vect[0]**2+vect[1]**2)
+    
     def Vnormale(self,vect,norme):
         if norme!=0:
             return (vect[0]/norme,vect[1]/norme)
@@ -58,65 +51,101 @@ class Physic():
         Vnorm=obj2.vnorm
         dot=np.dot(obj1.Vdirector,Vnorm)*2
         tosou=(dot*Vnorm[0],dot*Vnorm[1])
-        NewV=(obj1.Vdirector[0]-tosou[0],obj1.Vdirector[1]-tosou[1])
+        NewV=(obj1.Vdirector[0]-tosou[0],obj1.Vdirector[1]-tosou[1]) #vecteur directeur aprés boing
 
         norme=self.norme(NewV)
         NewV=self.Vnormale(NewV,norme)
+
         obj1.update(velocity=obj1.coefResti*obj1.velocity,Vdirector=NewV)
-        newxy=self.gravVcalc(obj1)
-        return newxy
-
     
-    def collision(self,obj1,obj2): #obj1 colisionneur, obj2 colisionné et cercle
-        Ngrav1=self.gravVcalc(obj1)
-        Ngrav2=self.gravVcalc(obj2)
-        obj1.update(velocity=Ngrav1[2])
-        obj2.update(velocity=Ngrav2[2])
-        Ec1=obj1.Ecin
-        Ec2=obj2.Ecin
-        m1=obj1.masse
-        m2=obj2.masse
+        return True
+    
+class Objects():
+    def __init__(self):
+        self.objectmap={} #liste des objets présents
+        self.container=[[[] for x in range(TAILLEX)] for y in range(TAILLEY)] #liste des objet dans chaque boite
+        
+        self.placemur()
 
-        New1=(Ngrav1[0]*Ec1,Ngrav1[1]*Ec1)
-        New2=(Ngrav2[0]*Ec2,Ngrav2[1]*Ec2)
+    def placemur(self):
+        droite=mur("droite")
+        gauche=mur("gauche")
+        haut=mur("haut")
+        bas=mur("bas")
+        self.addObject(droite)
+        self.addObject(gauche)
+        self.addObject(haut)
+        self.addObject(bas)
+        for y in range(TAILLEY):
+            self.container[y][0].append(id(gauche))
+            self.container[y][-1].append(id(droite))
+        for x in range(TAILLEX):
+            self.container[0][x].append(id(haut))
+            self.container[-1][x].append(id(bas))
+        return
 
-        Nvector=(New1[0]+New2[0],New1[1]+New2[1])
-        norme=np.sqrt(Nvector[0]**2+Nvector[1]**2)
-        v=np.sqrt(norme/(1/2*m1))
-        obj1.update(velocity=v,Vdirector=(Nvector[0]/norme,Nvector[1]/norme))
-        return #retourne vecteur directeur et vitesse
+    def addObject(self,obj): #traduit
+        self.objectmap[id(obj)]=obj
+        return id(obj)
+    
+    def removeObject(self,obj): #traduit (encore)
+        del self.objectmap[id(obj)]
+        return id(obj)
+    
+    def addContainer(self,obj,x,y): #ajoute l'id de l'objet présent dans la boite x,y
+        if 0<=x<TAILLEX and 0<=y<TAILLEY and id(obj) not in self.container[y][x]:
+            self.container[y][x].append(id(obj))
+            return True
+        return False
+    
+    def delContainer(self,objid,x,y):
+        self.container[y][x].remove(objid)
+        return
 
+    def paintall(self):
+        for i in self.objectmap.values():
+            i.draw()
+            i.drawVector()
+        return
+    
+    def updateallBox(self):
+        for i in self.objectmap.values():
+            i.UpdateBox() #chaque objet gere ou il ce trouve dans la grille
 
+    def movveAll(self):
+        for i in self.objectmap.values():
+            if i.Vdirector!=(0,0) and i.velocity!=0: #on évite de faire bouger les objets immobiles
+                i.moove()
+        return
+    
+    def checkColli(self,obj): #on regarde les potentiels colision
+        toCollide=[]
+        for i in obj.boxPosPrec:
+            c=self.container[i[1]][i[0]]
+            for j in c:
+                if j != id(obj) and j not in toCollide:
+                    toCollide.append(j)
+        return toCollide
+    
 class circle():
-    def __init__(self, x, y, r,objet):
+    def __init__(self, x, y, r,objets,physic):
         self.x = x
         self.y = y
-        self.r = r
+        self.r = r # pixel
         self._velocity=0 # m/s
         self._masse=1 # kg
         self.coefResti=0.83 #0.83
-        self._Ecin=(1/2)*self.masse*self.velocity**2
+        self._Ecin=0
         self.Vdirector=(1,0)
-        self.objectsclass=objet
-        self.physic=Physic()
         self.boxPosPrec=[]
-        self.updateBox()
-        self.cooldown=time.time()
-        self.tuchwall=0
+        self.WallCooldown=0.1 # case occupée actuellement ou avant ( sa dépend a quelle moment on ce situe )
 
-    def update_Ecin(self):
-        self._Ecin = 0.5 * self._masse * (self._velocity ** 2)
-        return
-
-    def cooldownstart(self):
+        self.Objects=objets
+        self.Physic=physic
+        
+        self.UpdateEcin()
+        self.UpdateBox()
         self.cooldown=time.time()
-        self.tuchwall=0
-        return
-    def cooldowncheck(self):
-        if time.time()-self.cooldown>=0.1:
-            return True
-        self.tuchwall+=1
-        return False
 
     @property
     def Ecin(self):
@@ -131,18 +160,31 @@ class circle():
     @velocity.setter
     def velocity(self,v):
         self._velocity=v
-        self.update_Ecin()
+        self.UpdateEcin()
         return
     @masse.setter
     def masse(self,m):
         self._masse=m
-        self.update_Ecin()
+        self.UpdateEcin()
+        return
+
+    def UpdateEcin(self):
+        self._Ecin = 0.5 * self._masse * (self._velocity ** 2)
+        return
+
+    def cooldownstart(self):
+        self.cooldown=time.time()
         return
     
+    def cooldowncheck(self):
+        if time.time()-self.cooldown>=self.WallCooldown:
+            return True
+        return False
+
     def draw(self):
         pygame.draw.circle(screen, (138, 16, 3), (self.x, self.y), self.r)
         return
-    def drawVector(self): #a refaire
+    def drawVector(self): 
         pygame.draw.line(screen, (255,0,0), (self.x,self.y), (self.x+(self.Ecin*self.Vdirector[0]/10),self.y-(self.Ecin*self.Vdirector[1]/10)), width=2)
         return
     
@@ -163,30 +205,30 @@ class circle():
             self.Vdirector=Vdirector
         return 
 
-    def updateBox(self): #donne toute les cases occupées par le cercle
+    def UpdateBox(self): #donne toute les cases occupées par le cercle
         rightTo=int((self.x+self.r)//N)
         leftTo=int((self.x-self.r)//N)
         topTo=int((self.y-self.r)//N)
         botTo=int((self.y+self.r)//N)
 
-        lSend=[]
+        CaseOccupe=[]
         for y in range(topTo,botTo+1):
             for x in range(leftTo,rightTo+1):
                 if 0<=x<TAILLEX and 0<=y<TAILLEY:
-                    lSend.append((x,y))
-                    self.objectsclass.addContainer(self,x,y)
+                    CaseOccupe.append((x,y))
+                    self.Objects.addContainer(self,x,y) #l'ajoute a la grille de boite
 
         if self.boxPosPrec != []:
                 for i in self.boxPosPrec:
-                    if i not in lSend:
-                        self.objectsclass.delContainer(id(self),i[0],i[1])
-                        grille[i[1]][i[0]]=0
-        self.boxPosPrec=lSend
+                    if i not in CaseOccupe:
+                        self.Objects.delContainer(id(self),i[0],i[1])
+                        
+        self.boxPosPrec=CaseOccupe
         return 
     
-    def tuchWall(self,x,y):
-        if not (0<=self.x+self.r<=WIDTH and 0<=self.y+self.r<=HEIGHT and 0<=self.x-self.r<=WIDTH and 0<=self.y-self.r<=HEIGHT) :
-            if self.x+self.r>WIDTH:
+    def tuchWall(self,x,y): #x,y nouvelle position si pas de mur
+        if not (0<=self.x+self.r<=WIDTH and 0<=self.y+self.r<=HEIGHT and 0<=self.x-self.r<=WIDTH and 0<=self.y-self.r<=HEIGHT) : #touche un mur quelquonque ?
+            if self.x+self.r>WIDTH: #trouve quelle coté
                 obj=mur("droite")
                 self.x=WIDTH-self.r
             if self.x-self.r<0:
@@ -200,49 +242,39 @@ class circle():
                 self.y=self.r
 
             if self.cooldowncheck():
-                newxy=self.physic.Collimur(self,obj)
-                self.x=newxy[0]
-                self.y=newxy[1]
-                self.cooldownstart()
+                self.Physic.Collimur(self,obj) #modifie direct vitesse et vecteur
+                newxy=self.Physic.gravVcalc(self.velocity,self.Vdirector,self.x,self.y)
+                self.update(x=newxy[0],y=newxy[1])
+                self.cooldownstart() #reset coolodown
                 print("boing")
-                print(self.Vdirector,self.velocity)
-                print(self.y+self.r)
-                if self.velocity<0.7 and self.y>=HEIGHT-self.r-1:
-                    print("stuck")
-                    self.velocity=0
-                    self.Vdirector=(0,0)
-                    self.y=HEIGHT-self.r
-            elif self.velocity<0.7 and self.y>=HEIGHT-self.r-1:
+            if self.velocity<0.7 and self.y>=HEIGHT-self.r-1:
                 print("stuck")
                 self.velocity=0
                 self.Vdirector=(0,0)
                 self.y=HEIGHT-self.r
-                
         else:
             self.x=x
             self.y=y
+        return
 
     def moove(self):
-        u=self.objectsclass.checkColli(self)
-        newxy=self.physic.gravVcalc(self)
+        u=self.Objects.checkColli(self) #liste des objets a tester
+        newxy=self.Physic.gravVcalc(self.velocity,self.Vdirector,self.x,self.y)
         x=newxy[0]
         y=newxy[1]
-        self.velocity=newxy[2]
-        self.Vdirector=newxy[3]
+        self.update(velocity=newxy[2],Vdirector=newxy[3])
+
+        modif=False
         if u != []:
             for i in u:
-                uh=self.objectsclass.objectmap[i]
+                uh=self.Objects.objectmap[i]
                 match uh:
                     case mur():
-                        self.tuchWall(x,y)
-                        
+                        self.tuchWall(x,y) #mais direct a jour
+                        modif=True
                     case circle():
-                        
                         pass
-                    case _:
-                        self.x=x
-                        self.y=y
-        else:
+        if not modif:
             self.x=x
             self.y=y
         return
@@ -272,115 +304,30 @@ class mur():
         return
     def update(self):
         return
-    def updateBox(self):
+    def UpdateBox(self):
         return
 
+objects=Objects()
+physic=Physic()
 
-class objects():
-    def __init__(self):
-        self.objectmap={} #liste des objets présents
-        self.container=[[[] for x in range(TAILLEX)] for y in range(TAILLEY)] #liste des objet dans chaque boite
-        self.traceList=[]
-        self.placemur()
-
-    def placemur(self):
-        droite=mur("droite")
-        gauche=mur("gauche")
-        haut=mur("haut")
-        bas=mur("bas")
-        self.addObject(droite)
-        self.addObject(gauche)
-        self.addObject(haut)
-        self.addObject(bas)
-        for y in range(TAILLEY):
-            self.container[y][0].append(id(gauche))
-            self.container[y][-1].append(id(droite))
-        for x in range(TAILLEX):
-            self.container[0][x].append(id(haut))
-            self.container[-1][x].append(id(bas))
-        return
-
-    def addObject(self,obj):
-        self.objectmap[id(obj)]=obj
-        return id(obj)
-    
-    def removeObject(self,obj):
-        del self.objectmap[id(obj)]
-        return id(obj)
-    
-    def addContainer(self,obj,x,y):
-        if 0<=x<TAILLEX and 0<=y<TAILLEY and id(obj) not in self.container[y][x]:
-            self.container[y][x].append(id(obj))
-            return True
-        return False
-    
-    def delContainer(self,objid,x,y):
-        self.container[y][x].remove(objid)
-        return
-    
-    def trace(self,obj):
-        self.traceList.append((obj.x,obj.y))
-
-    def paintall(self):
-        for i in self.objectmap.values():
-            i.draw()
-            i.drawVector()
-            #self.trace(i)
-        return
-    
-    def updateallBox(self):
-        for i in self.objectmap.values():
-            i.updateBox()
-
-    def movveAll(self):
-        for i in self.objectmap.values():
-            if i.Vdirector!=(0,0) :
-                i.moove()
-        return
-    
-    def checkColli(self,obj):
-        toCollide=[]
-        for i in obj.boxPosPrec:
-            c=self.container[i[1]][i[0]]
-            for j in c:
-                if j != id(obj) and j not in toCollide:
-                    toCollide.append(j)
-
-        return toCollide
-
-def dess(grille):
-    for y in range(TAILLEY):
-        for x in range(TAILLEX):
-            if grille[y][x] == 1:
-                pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(x * N, y * N, N - 1, N - 1))
-            else:
-                pygame.draw.rect(screen, pygame.Color(255, 255, 255, 128), pygame.Rect(x * N, y * N, N - 1, N - 1))
-    return 
-
-Objects=objects()
-c=circle(20,390,10,Objects)
-#c1=circle(500,390,10)
-Objects.addObject(c)
-#Objects.addObject(c1)
-c.update(velocity=10,Vdirector=(1/np.sqrt(1**2+1**2),1/np.sqrt(1**2+1**2)))
-#c1.update(velocity=40,Vdirector=(-1/np.sqrt(1**2+1**2),1/np.sqrt(1**2+1**2)))
+c=circle(20,390,10,objects,physic)
+c1=circle(500,390,10,objects,physic)
+objects.addObject(c)
+objects.addObject(c1)
+c.update(velocity=40,Vdirector=physic.Vnormale((1,1),physic.norme((1,1))))
+c1.update(velocity=40,Vdirector=physic.Vnormale((1,1),physic.norme((1,1))))
 
 
 while running:
     screen.fill((115, 117, 117))
-    #dess(grille)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running=False
-        #if event.type == pygame.KEYDOWN:
-        #    if event.key==pygame.K_UP:
-        #        c.update(0,-N,0)
-    Objects.movveAll()
-    Objects.updateallBox()
-    Objects.paintall()
-    
-    #for i in Objects.traceList:
-    #    pygame.draw.circle(screen, (0, 0, 255), (int(i[0]), int(i[1])), 2)
+
+    objects.movveAll()
+    objects.updateallBox()
+    objects.paintall()
+
     pygame.display.update()
     clock.tick(FPS)
 quit()
