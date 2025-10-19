@@ -6,9 +6,16 @@ import asyncio
 import keyboard 
 import threading
 import numpy as np
+import random
+import pygetwindow
 
-FPS = 30
+FPS = 50
 PIXELTOMETER = 10 #10 pixel -> 1m
+#to use this, launch three window with pygame name Ping1 / 2 / 3 that play pong on it
+#be sure to put the right height and width and uncomment the needed part in this shit-ish code
+#W1=pygetwindow.getWindowsWithTitle('Pong1')[0]._hWnd
+#W2=pygetwindow.getWindowsWithTitle('Pong2')[0]._hWnd
+#W3=pygetwindow.getWindowsWithTitle('Pong3')[0]._hWnd
 
 def Vcalc(v,vector,x,y): #calcule nouvelle position
     distance=v*(1/FPS)
@@ -33,7 +40,11 @@ def Vnormale(vect,norme):
     return (0,0)
 
 def Collimur(Vnorm,Vimpact): #obj1 colisionneur, obj2 mur
+    u=random.uniform(-0.3, 0.3)
+    u=round(u,2)
+    Vnorm=Vnormale((Vnorm[0],Vnorm[1]+u),Norme((Vnorm[0],Vnorm[1]+u)))
     
+
     dot=np.dot(Vimpact,Vnorm)*2
     tosou=(dot*Vnorm[0],dot*Vnorm[1])
     NewV=(Vimpact[0]-tosou[0],Vimpact[1]-tosou[1]) #vecteur directeur aprés boing
@@ -103,7 +114,9 @@ class Window:
         
 
     def update(self,name,x,y,width,height):
-        win32gui.SetWindowPos(self.dicte[name],0,x,y,width,height,0)
+        win32gui.MoveWindow(self.dicte[name],x,y,width,height,0)
+    #def update(self,name,x,y,width,height):
+    #    win32gui.SetWindowPos(name,0, x, y, width, height, True)
 
 class Balle():
     def __init__(self,r):
@@ -192,20 +205,20 @@ class Pong():
         Bwidth,Bheight=i.width/2,i.width/2
         Wx,Wy=wall.x,wall.y
         Wwidth,Wheight=wall.width/2,wall.height/2
-        if x+Bwidth>=Wx-Wwidth and Wy-Wheight <= y <=Wy+Wheight:
+        if x+Bwidth>=Wx-Wwidth and (Wy-Wheight <= y-Bheight <=Wy+Wheight or Wy-Wheight <= y+Bheight <=Wy+Wheight):
             Vecteur=Collimur((-1,0),i.Vdirector)
             i.Vdirector=Vecteur
-            i.x=i.x-(Wx-Wwidth-x+Bwidth)#-1
+            #i.x=i.x-(Wx-Wwidth-x+Bwidth)#-1
 
         wall=self.autowall
         x,y=i.x,i.y
         Bwidth,Bheight=i.width/2,i.width/2
         Wx,Wy=wall.x,wall.y
         Wwidth,Wheight=wall.width/2,wall.height/2
-        if x-Bwidth<=Wx+Wwidth and Wy-Wheight <= y <=Wy+Wheight:
+        if x-Bwidth<=Wx+Wwidth and (Wy-Wheight <= y-Bheight <=Wy+Wheight or Wy-Wheight <= y+Bheight <=Wy+Wheight):
             Vecteur=Collimur((1,0),i.Vdirector)
             i.Vdirector=Vecteur
-            i.x=i.x+(Wx-Wwidth+x+Bwidth)#+1
+            #i.x=i.x+(Wx-Wwidth+x+Bwidth)#+1
         return
     
     def go(self):
@@ -218,10 +231,11 @@ class Pong():
             xy=Vcalc(self.ball.Velocity,self.ball.Vdirector,self.ball.x,self.ball.y)
             self.ball.x,self.ball.y=xy
             self.autowall.y=self.ball.y
+        #    self.window.update(W1,self.ball.winpos[0],self.ball.winpos[1],self.ball.width,self.ball.height)
+        #    self.window.update(W2,self.autowall.winpos[0],self.autowall.winpos[1],self.autowall.width,self.autowall.height)
+        #    self.window.update(W3,self.wall.winpos[0],self.wall.winpos[1],self.wall.width,self.wall.height)
             self.window.update("block",self.ball.winpos[0],self.ball.winpos[1],self.ball.width,self.ball.height)
-
             self.window.update("Lwall",self.autowall.winpos[0],self.autowall.winpos[1],self.autowall.width,self.autowall.height)
-
             self.window.update("Rwall",self.wall.winpos[0],self.wall.winpos[1],self.wall.width,self.wall.height)
             time.sleep(1/FPS)
             
