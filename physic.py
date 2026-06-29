@@ -19,7 +19,7 @@ running = True
 
 class Physic():
     def __init__(self):
-        self.gravity=9.81 # m/s^2 9.81
+        self.gravity=20 # m/s^2 9.81
 
     def Vcalc(self,v,vector,x,y): #calcule nouvelle position
         distance=v*(1/FPS)

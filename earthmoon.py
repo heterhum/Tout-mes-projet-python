@@ -1,6 +1,16 @@
 import pygame
+import pygame.gfxdraw
 import numpy as np
-import scipy as sp
+#import scipy as sp
+import threading
+import time
+import pandas as pd
+import plotly.express as px
+from datetime import datetime
+from dash import Dash, html, dcc
+from dash.dependencies import Input, Output
+import dash
+import threading
 
 TAILLEX=800
 TAILLEY=800
@@ -25,10 +35,13 @@ class SolarSys:
         self.xy=np.array([100,100])
         self.Rxy=np.array([100,100])*self.PixToMe
         self.Vmouvement=np.array([0,0])
+        self.dictSpeed={"Time":[],
+                        "Speed":[]}
 
         self.EarthMass=5.9722e24 #kg
         self.MoonMass=7.34767309e22 #kg
         self.MoonDistance=3.85e8
+        self.G=6.67259*10**-11
 
         self.color=(255,255,255)
         self.radius=2
@@ -36,11 +49,14 @@ class SolarSys:
         self.HourWanted=24 #number of hour in 1 sec irl
 
         self.dt=(self.HourWanted*3600)/FPSM #1 sec irl is 120 frame in game, i want 1 sec to be 1 month so 1 month to sec / 120
+        self.last=0
 
         
     def initcalc(self):
-        v=np.sqrt((sp.constants.G*self.EarthMass)/self.MoonDistance) #init speed m/s
-        vec=v*np.array([1,0]) #to right
+        #v=np.sqrt((self.G*self.EarthMass)/self.MoonDistance) #init speed m/s
+        v=1000
+        #vec=v*np.array([1,0]) #to right
+        vec=v*np.array([1,1])
 
         EarthPos=np.array([TAILLEX//2,TAILLEY//2])*self.PixToMe
 
@@ -55,7 +71,7 @@ class SolarSys:
         return
 
     def Gravitation(self,d,m1): #meter and Kg
-        f=sp.constants.G * m1/d**2
+        f=self.G * m1/d**2
         return f
 
     def updateVector(self,target):
@@ -80,6 +96,10 @@ class SolarSys:
 
         self.Rxy=np.add(self.Rxy,vec*self.dt) #position + Vspeed*dt -> position
         self.xy=self.Rxy/self.PixToMe #meter to pixel
+        if pygame.time.get_ticks() > self.last+100:
+            self.dictSpeed["Time"].append(pygame.time.get_ticks()/1000)
+            self.dictSpeed["Speed"].append(self.v)
+            self.last=pygame.time.get_ticks()
         return
 
     def TradXY(self):
@@ -87,7 +107,9 @@ class SolarSys:
 
     def draw(self,screen):
         xy=self.TradXY()
-        pygame.draw.circle(screen,self.color,xy,self.radius) #moon
+        pygame.gfxdraw.filled_circle(screen,xy[0],xy[1],self.radius,self.color)
+        pygame.gfxdraw.aacircle(screen,xy[0],xy[1],self.radius,self.color)
+        
         pygame.draw.line(screen,(255,0,0),xy,xy+(self.Vmouvement/self.PixToMe),1) #vector
         return
 
@@ -99,6 +121,36 @@ runner.initcalc()
 
 EarthPos=[TAILLEX//2,TAILLEY//2]
 
+def initgraph(dico):
+    app = Dash(__name__)
+
+    # Define the layout of the application
+    app.layout = html.Div([
+        dcc.Graph(id='real-time-plot'),
+        dcc.Interval(
+            id='interval-component',
+            interval=100,  # in milliseconds
+            n_intervals=0
+        )
+    ])
+
+    # Define callback to update the plot in real-time
+    @app.callback(Output('real-time-plot', 'figure'),
+                  [Input('interval-component', 'n_intervals')])
+
+    def update_graph(n_intervals):
+        df = pd.DataFrame(dico)
+        # Update the plot
+        fig = px.line(df, x='Time', y='Speed', title='Real-time Data Plot')
+
+        return fig
+
+    app.run(debug=True,
+    use_reloader=False,
+    threaded=True)
+    
+threadgraph= threading.Thread(target=initgraph,args=(runner.dictSpeed,))
+threadgraph.start()
 while running:
     screen.fill((0, 0, 0))
     for event in pygame.event.get():
@@ -115,5 +167,8 @@ while running:
     screen.blit(label1, (100, 120))
     screen.blit(label2, (100, 140))
     pygame.draw.circle(screen,(0,255,0),(EarthPos[0],EarthPos[1]),13)
+
     pygame.display.update()
     clock.tick(FPSM)
+
+threadgraph.join()
