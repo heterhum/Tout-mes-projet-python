@@ -33,24 +33,24 @@ class Pigeon:
         self.ListPig={}
         self.ListEat={}
 
-        self.Will=1
-        self.SeparationFactor=140
-        self.AlignmentFactor=20
-        self.CohesionFactor=1
-        self.EatFactor=12
 
     def CreatePig(self):
         for i in range(self.NumberPig):
             self.ListPig[i]={
                 "pos":np.array([rd.randint(0,TAILLEX),rd.randint(0,TAILLEY)]),
-                "vit":30,
+                "vit":rd.choice([30,50]),
                 "vecDir": np.array([0.0,0.0]),
                 "vecSpeed":np.array([0.0,0.0]),
-                "vision":10, #if all same vision -> optimisation nieghPIg
+                "vision":rd.choice([20,100]), #if all same vision -> optimisation nieghPIg
                 "sep":1,
                 "neigh":[],
                 "tosep":["n",float('inf')], #who, dist
-                "Eat":["n",float('inf')]
+                "Eat":["n",float('inf')],
+                "Will":rd.choice([1,3]),
+                "SeparationFactor":rd.choice([50,140]),
+                "AlignmentFactor":rd.choice([10,20]),
+                "CohesionFactor":rd.choice([1,30]),
+                "EatFactor":rd.choice([30,60]),
                 }
         return
 
@@ -139,15 +139,15 @@ class Pigeon:
             vd2=self.Cohesion(i,old[i]["neigh"],old)
             vd3=self.Eat(i,old[i]["Eat"],old)
             
-            vd0*=self.SeparationFactor
-            vd1*=self.AlignmentFactor
-            vd2*=self.CohesionFactor
-            vd3*=self.EatFactor
+            vd0*=old[i]["SeparationFactor"]
+            vd1*=old[i]["AlignmentFactor"]
+            vd2*=old[i]["CohesionFactor"]
+            vd3*=old[i]["EatFactor"]
 
             new=vd0+vd1+vd2+vd3
             t=new*(1/FPS)
 
-            u=old[i]["vecSpeed"]*self.Will+t
+            u=old[i]["vecSpeed"]*old[i]["Will"]+t
             if np.linalg.vector_norm(u)>old[i]["vit"]:
                 u=normalise(u)*old[i]["vit"]
 
